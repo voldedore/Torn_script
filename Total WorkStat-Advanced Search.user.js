@@ -138,7 +138,7 @@ let GM_addStyle = function (s) {
     swLoadFilterSwitch(); // Load the switch state
 
     // Function to add switch button to the page
-    const SWFilterBar = document.querySelector('.bar___Bv5Ho').parentNode.insertBefore(createSwitchButton(), document.querySelectorAll('.bar___Bv5Ho')[0]);
+    const SWFilterBar = document.querySelector('.bar___SK5V7').parentNode.insertBefore(createSwitchButton(), document.querySelectorAll('.bar___SK5V7')[0]);
 
     // Only run the script on the specific page
     if (window.location.pathname === '/page.php' && window.location.search.startsWith('?sid=UserList')) {
