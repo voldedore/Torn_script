@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         [omo] Refill Notification
 // @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Notify user about daily refills with dots under user points
+// @version      0.2
+// @description  Notify user about daily refills with 3-color dot in status bar (energy, nerve, token). Uses Torn API. This inspired by the original Refill Notifier script by DaoChauNghia [3029549], but rewritten from scratch for better performance and maintainability.
 // @author       Voldedore [3673166]
 // @match        https://www.torn.com/*php*
 // @exclude      https://www.torn.com/page.php?sid=attack&user2ID=*
@@ -67,8 +67,8 @@
     // ─── Storage helpers (always use GM storage for userscript isolation) ─────
 
     const Storage = {
-        getApiKey: () => GM_getValue('apiKey', null),
-        setApiKey: (v) => GM_setValue('apiKey', v),
+        getApiKey: () => GM_getValue('refillNotifApiKey', null),
+        setApiKey: (v) => GM_setValue('refillNotifApiKey', v),
         getCache:  () => {
             try {
                 return JSON.parse(GM_getValue(CONFIG.CACHE_KEY, 'null'));
