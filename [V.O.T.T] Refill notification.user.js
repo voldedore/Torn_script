@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         [V.O.T.T] Refill Notification
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Notify user about daily refills with dots under user points
 // @author       DaoChauNghia [3029549]
 // @match        https://www.torn.com/*php*
-// @exclude      https://www.torn.com/loader.php?sid=attack&user2ID=*
+// @exclude      https://www.torn.com/page.php?sid=attack&user2ID=*
 // @exclude      https://www.torn.com/preferences*
-// @updateURL    https://github.com/N-0-0-B-Coder/Torn_script/raw/main/%5BV.O.T.T%5D%20Refill%20notification.user.js
-// @downloadURL  https://github.com/N-0-0-B-Coder/Torn_script/raw/main/%5BV.O.T.T%5D%20Refill%20notification.user.js
+// @updateURL    https://github.com/voldedore/Torn_script/raw/main/%5BV.O.T.T%5D%20Refill%20notification.user.js
+// @downloadURL  https://github.com/voldedore/Torn_script/raw/main/%5BV.O.T.T%5D%20Refill%20notification.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=torn.com
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -95,7 +95,7 @@
 
     // Function to check the API key
     async function checkApiKey(apiKey) {
-        const apiUrl = `https://api.torn.com/user/?selections=refills&key=${apiKey}`;
+        const apiUrl = `https://api.torn.com/user/?selections=refills&comment=RefillNotif&key=${apiKey}`;
 
         const response = await fetch(apiUrl);
 
@@ -147,33 +147,31 @@
             const data = await checkApiKey(storedApiKey);
 
             // Create a box as a child element of the specified class element
-            const pointBox = document.querySelectorAll('.point-block___rQyUK');
-            const pointBlock = pointBox[2];
-            const refillBox = document.createElement('div');
-            refillBox.style.display = 'flex';
-            refillBox.style.alignItems = 'center';
-
-            // Create dots with characters for energy, nerve, and token refills
-            const energyDot = createDot('#69a829', !data.refills.energy_refill_used, 'E');
-            const nerveDot = createDot('#c66231', !data.refills.nerve_refill_used, 'N');
-            const tokenDot = createDot('purple', !data.refills.token_refill_used, 'T');
-
-            // Append dots to the refillBox
-            refillBox.appendChild(energyDot);
-            refillBox.appendChild(nerveDot);
-            refillBox.appendChild(tokenDot);
-
-            // Append the refillBox to the pointBlock
+            const pointBlock = document.querySelector('.tt-points-value');
             if (pointBlock) {
+                const refillBox = document.createElement('div');
+                refillBox.style.display = 'flex';
+                refillBox.style.alignItems = 'center';
+
+                // Create dots with characters for energy, nerve, and token refills
+                const energyDot = createDot('#69a829', !data.refills.energy_refill_used, 'E');
+                const nerveDot = createDot('#c66231', !data.refills.nerve_refill_used, 'N');
+                const tokenDot = createDot('purple', !data.refills.token_refill_used, 'T');
+
+                // Append dots to the refillBox
+                refillBox.appendChild(energyDot);
+                refillBox.appendChild(nerveDot);
+                refillBox.appendChild(tokenDot);
+
+                // Append the refillBox to the pointBlock
                 pointBlock.appendChild(refillBox);
+
+                // Create a switch button
+                const switchButton = createSwitchButton(refillBox);
+                refillBox.appendChild(switchButton);
             } else {
                 console.error('Could not find the third .point-block element');
             }
-
-
-            // Create a switch button
-            const switchButton = createSwitchButton(refillBox);
-            refillBox.appendChild(switchButton);
 
         } catch (error) {
             console.error('Error fetching data:', error.message);
