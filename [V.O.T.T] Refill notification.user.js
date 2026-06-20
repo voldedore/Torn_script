@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [V.O.T.T] Refill Notification
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Notify user about daily refills with dots under user points
 // @author       DaoChauNghia [3029549]
 // @match        https://www.torn.com/*php*
@@ -147,7 +147,7 @@
             const data = await checkApiKey(storedApiKey);
 
             // Create a box as a child element of the specified class element
-            const pointBlock = document.querySelector('.tt-points-value');
+            const pointBlock = document.querySelectorAll('[class*="point-block___"]')[2];
             if (pointBlock) {
                 const refillBox = document.createElement('div');
                 refillBox.style.display = 'flex';
