@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         [omo] Refill Notification
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Notify user about daily refills with 3-color dot in status bar (energy, nerve, token). Uses Torn API. This inspired by the original Refill Notifier script by DaoChauNghia [3029549], but rewritten from scratch for better performance and maintainability.
 // @author       Voldedore [3673166] & Perplexity (Claude Sonnet 4.6)
 // @match        https://www.torn.com/*php*
 // @exclude      https://www.torn.com/page.php?sid=attack&user2ID=*
 // @exclude      https://www.torn.com/preferences*
-// @run-at       document-start
+// @run-at       document-end
 // @updateURL    https://github.com/voldedore/Torn_script/raw/main/refill-notification.user.js
 // @downloadURL  https://github.com/voldedore/Torn_script/raw/main/refill-notification.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=torn.com
@@ -19,20 +19,21 @@
 (function () {
     'use strict';
 
-    // Changelog:
+    // #region Changelog:
+    // v0.5 - 2026-06-21: Refactor, change script to run at document-end
     // v0.4 - 2026-06-20: Fix double API call on validate, fix PDA guard typo
     // v0.3 - 2026-06-20: Fix self-trigger mutation observer
     // v0.2 - 2026-06-20: Add PDA support
     // v0.1 - 2026-06-20: Initial release
 
-    // ─── PDA RELATED ──────────────────────────────────────────────────────────
+    // #region PDA RELATED ──────────────────────────────────────────────────────────
 
     // if (window.REFILL_NOTIFICATION_INJECTED) return;
     // window.REFILL_NOTIFICATION_INJECTED = true;
 
     const PDA_API_KEY = '###PDA-APIKEY###';
 
-    // ─── Constants ────────────────────────────────────────────────────────────
+    // #region Constants ────────────────────────────────────────────────────────────
 
     const CONFIG = {
         API_BASE: 'https://api.torn.com/user/',
@@ -58,7 +59,7 @@
         { key: 'token_refill_used', color: COLORS.TOKEN },
     ];
 
-    // ─── Storage ──────────────────────────────────────────────────────────────
+    // #region Storage ──────────────────────────────────────────────────────────────
 
     const Storage = {
         getApiKey: () => GM_getValue('refillNotifApiKey', null),
@@ -78,7 +79,7 @@
         getCachedData: () => Storage.getCache()?.data ?? null,
     };
 
-    // ─── API ──────────────────────────────────────────────────────────────────
+    // #region API ──────────────────────────────────────────────────────────────────
 
     const API = {
         async fetchRefills(apiKey) {
@@ -93,7 +94,7 @@
         },
     };
 
-    // ─── Auth ─────────────────────────────────────────────────────────────────
+    // #region Auth ─────────────────────────────────────────────────────────────────
 
     const Auth = {
         promptApiKey() {
@@ -116,7 +117,7 @@
             /incorrect key|access level/i.test(err.message),
     };
 
-    // ─── UI ───────────────────────────────────────────────────────────────────
+    // #region UI ───────────────────────────────────────────────────────────────────
 
     const UI = {
         buildGradient(refills) {
@@ -168,7 +169,7 @@
         isPresent: () => !!document.getElementById(CONFIG.DOT_ID),
     };
 
-    // ─── Phase 1: Data ────────────────────────────────────────────────────────
+    // #region Phase 1: Data ────────────────────────────────────────────────────────
 
     async function resolveData() {
         let apiKey = Storage.getApiKey();
@@ -179,7 +180,6 @@
         }
 
         if (Storage.isCacheFresh()) {
-            console.debug('refNot_cacheFresh');
             return Storage.getCachedData();
         }
 
@@ -208,45 +208,26 @@
         }
     }
 
-    // ─── Phase 2: UI ──────────────────────────────────────────────────────────
+    // #region Phase 2: UI ──────────────────────────────────────────────────────────
 
-    function startUI(data) {
+    async function startUI() {
         let observer = null;
-        let debounce = null;
-        let injecting = false;
 
-        function doInject() {
-            if (injecting) return;
-            injecting = true;
-            observer.disconnect();
-            const success = UI.inject(data);
-            observer.observe(document.body, { childList: true, subtree: true });
-            injecting = false;
-            if (!success) {
-                debounce = setTimeout(doInject, CONFIG.DEBOUNCE_MS);
-            }
-        }
-
-        function onMutation() {
-            if (injecting) return;
+        async function onMutation() {
             if (!document.querySelector(CONFIG.DOT_SELECTOR)) return;
             if (UI.isPresent()) return;
-            clearTimeout(debounce);
-            debounce = setTimeout(doInject, CONFIG.DEBOUNCE_MS);
+            const data = await resolveData();
+            UI.inject(data);
         }
 
         observer = new MutationObserver(onMutation);
-        observer.observe(document.body, { childList: true, subtree: true });
-        onMutation();
+        observer.observe(document.body, { childList: false, subtree: false, attributes: true });
     }
 
-    // ─── Bootstrap ────────────────────────────────────────────────────────────
+    // #region Bootstrap ────────────────────────────────────────────────────────────
 
     async function main() {
-        console.debug('refNot_run');
-        const data = await resolveData();
-        if (!data) return;
-        startUI(data);
+        await startUI();
     }
 
     main().catch(err => console.error('[Refill Notifier] Fatal error:', err));
