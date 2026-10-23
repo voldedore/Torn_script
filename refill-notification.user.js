@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [omo] Refill Notification
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Notify user about daily refills with 3-color dot in status bar (energy, nerve, token). Uses Torn API. This inspired by the original Refill Notifier script by DaoChauNghia [3029549], but rewritten from scratch for better performance and maintainability.
 // @author       Voldedore [3673166] & Perplexity (Claude Sonnet 4.6)
 // @match        https://www.torn.com/*php*
@@ -20,6 +20,7 @@
     'use strict';
 
     // #region Changelog:
+    // v0.6 - 2026-10-23: Fix class name change from last patch
     // v0.5 - 2026-06-21: Refactor, change script to run at document-end
     // v0.4 - 2026-06-20: Fix double API call on validate, fix PDA guard typo
     // v0.3 - 2026-06-20: Fix self-trigger mutation observer
@@ -42,7 +43,7 @@
         CACHE_KEY: 'refillData',
         CACHE_TTL_MS: 120_000,
         DEBOUNCE_MS: 300,
-        DOT_SELECTOR: '[class*="status-icons___"]',
+        DOT_SELECTOR: '[class*="statusIcons___"]',
         DOT_ID: 'refill-notif-dot',
     };
 
